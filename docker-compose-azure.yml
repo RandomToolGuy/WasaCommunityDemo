@@ -5,17 +5,20 @@ services:
 
   nginx:
     image: randomtoolguysazurecontainerregistry.azurecr.io/wasacommunity:nginx-1
+    restart: always
     ports:
       - "81:80"
       - "443:443"
 
   angular:
     image: randomtoolguysazurecontainerregistry.azurecr.io/wasacommunity:angular-1
+    restart: always
     ports:
     - "4200:80"
 
   dotnetcore:
     image: randomtoolguysazurecontainerregistry.azurecr.io/wasacommunity:aspnetcore-1
+    restart: always
     depends_on:
         - database
     command: ["./wait-for-it.sh", "database:1433", "--timeout=8", "--strict", "--", "dotnet", "WasaCommunity.dll"]
@@ -24,7 +27,8 @@ services:
       - ConnectionString=Server=database;Database=WasaCommunityData.OAuth;User Id=sa;Password=P@ssw0rd!
 
   database:
-    image: microsoft/mssql-server-linux:latest
+    image: randomtoolguysazurecontainerregistry.azurecr.io/wasacommunity:sql-1
+    restart: always
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "P@ssw0rd!"
