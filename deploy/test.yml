@@ -1,0 +1,44 @@
+
+version: "3.1"
+
+services:
+
+  nginx-service:
+    image: ${PERSONAL_REPOSITORY}nginx${CUSTOM_VERSION}
+    volumes:
+      - ./dist:/usr/share/nginx/html
+    ports:
+      - "81:80"
+      - "443:443"
+
+  angular-service:
+    image: ${PERSONAL_REPOSITORY}angular${CUSTOM_VERSION}
+    ports:
+    - "4200:80"
+    depends_on:
+      - nginx-service
+
+  dotnetcore-service:
+    image: ${PERSONAL_REPOSITORY}aspnetcore${CUSTOM_VERSION}
+    restart: unless-stopped
+    ports:
+    - "5000:5000"
+    depends_on:
+        - database-service
+        - nginx-service
+    command: ["./wait-for-it.sh", "database-service:1433", "--timeout=8", "--strict", "--", "dotnet", "WasaCommunity.dll"]
+
+  database-service:
+    image: microsoft/mssql-server-linux:latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "P@ssw0rd!"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - data:/var/lib/sqlexpress
+
+volumes:
+  data:
+    external: true

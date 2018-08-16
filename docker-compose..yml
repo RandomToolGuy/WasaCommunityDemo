@@ -1,0 +1,70 @@
+
+version: "3.1"
+
+services:
+
+  nginx-service:
+    container_name: nginx-container
+    image: ${PERSONAL_REPOSITORY}nginx${CUSTOM_VERSION}
+    build:
+      context: .
+      dockerfile: .docker/nginx.dockerfile
+    volumes:
+      - ./dist:/usr/share/nginx/html
+    ports:
+      - "81:80"
+      - "443:443"
+
+    networks:
+      - app-network
+
+  angular-service:
+    container_name: angular-container
+    build: 
+      context: ./WasaCommunity/ClientApp
+      dockerfile: .docker/angular.production.dockerfile
+    image: ${PERSONAL_REPOSITORY}angular${CUSTOM_VERSION}
+    ports:
+    - "4200:80"
+    networks:
+        - app-network
+    depends_on:
+      - nginx-service
+
+  dotnetcore-service:
+    container_name: dotnetcore-container
+    image: ${PERSONAL_REPOSITORY}aspnetcore${CUSTOM_VERSION}
+    build:
+      context: .
+      dockerfile: .docker/aspnetcore.production.dockerfile
+    restart: unless-stopped
+    ports:
+    - "5000:5000"
+    depends_on:
+        - database-service
+        - nginx-service
+    command: ["./wait-for-it.sh", "database-service:1433", "--timeout=8", "--strict", "--", "dotnet", "WasaCommunity.dll"]
+    networks:
+      - app-network
+
+  database-service:
+    container_name: database-container
+    image: microsoft/mssql-server-linux:latest
+    networks:
+        - app-network
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "P@ssw0rd!"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - data:/var/lib/sqlexpress
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  data:
+    external: true
