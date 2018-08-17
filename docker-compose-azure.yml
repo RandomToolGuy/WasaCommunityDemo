@@ -4,7 +4,7 @@ version: "3"
 services:
 
   angular:
-    image: randomtoolguysazurecontainerregistry.azurecr.io/wasacommunity:angular-1
+    image: randomtoolscontainerregistry.azurecr.io/wasacommunity:angular-1
     restart: always
     ports:
     - "4200:80"
