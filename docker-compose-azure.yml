@@ -3,8 +3,16 @@ version: "3"
 
 services:
 
+  nginx:
+    image: randomtoolscontainerregistry.azurecr.io/wasacommunity:nginx-1
+    restart: always
+    ports:
+      - "81:80"
+      - "443:443"
+
   angular:
     image: randomtoolscontainerregistry.azurecr.io/wasacommunity:angular-1
     restart: always
     ports:
     - "4200:80"
+
